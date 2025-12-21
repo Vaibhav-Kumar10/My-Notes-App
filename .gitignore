@@ -3,9 +3,6 @@ firebase.json
 android/app/google-services.json
 lib/mainCopy.dart
 
-# temp
-lib/home.dart
-
 
 # Miscellaneous
 .vscode
