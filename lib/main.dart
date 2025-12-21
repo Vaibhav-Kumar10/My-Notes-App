@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:my_notes_app/home.dart';
 import 'package:my_notes_app/views/login_view.dart';
 import 'package:my_notes_app/views/register_view.dart';
+
+import 'package:my_notes_app/firebase_options.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:my_notes_app/loading.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -11,147 +17,113 @@ void main() {
       debugShowCheckedModeBanner: false,
       title: "My  Notes App",
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: const LoginView(),
+      home: HomePage(),
     ),
   );
 }
 
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
 
+  @override
+  Widget build(BuildContext context) {
+    // BuildContext context can be used to pass information form current Widget to another of its child Widget
 
-// import 'package:my_notes_app/firebase_options.dart';
-// import 'package:firebase_auth/firebase_auth.dart';
-// import 'package:firebase_core/firebase_core.dart';
-// import 'package:my_notes_app/loading.dart';
+    // The widget for specifying each page / screen of app
+    // Has variuos part -
+    // 1. Appbar - The top bar
+    // 2. Body - for main content
+    // 3. etc.
+    return Scaffold(
+      appBar: AppBar(title: Text("Home"), backgroundColor: Colors.blue[100]),
 
-// class HomePage extends StatefulWidget {
-//   const HomePage({super.key});
+      // Takes  and performs a Future, and once it returns a callback, produce a Widget depending on the state
+      body: FutureBuilder(
+        // Initialize the Firebase backend at starting
+        // Initializes a new [FirebaseApp] instance by [name] and [options] and returns the created app. This method should be called before any usage of FlutterFire plugins.
+        future: Firebase.initializeApp(
+          options: DefaultFirebaseOptions.currentPlatform,
+        ),
 
-//   @override
-//   State<HomePage> createState() => _HomePageState();
-// }
+        // Builder function is called when the Future finishes
+        builder: (context, snapshot) {
+          // Now until the Future completes, a Loading State should be shown,
+          switch (snapshot.connectionState) {
+            // When the state is done
+            case ConnectionState.done:
+              print("Future success");
 
-// class _HomePageState extends State<HomePage> {
-//   // Initialise the TextEditingController for email and password
-//   late final TextEditingController _email;
-//   late final TextEditingController _password;
+              // Get the current user from Firebase Auth object
+              final User? user = FirebaseAuth.instance.currentUser;
+              print(user);
 
-//   @override
-//   void initState() {
-//     super.initState();
-//     // Create the TextEditingController objects when the Widget is initialised
-//     _email = TextEditingController();
-//     _password = TextEditingController();
-//     print("TextEditingController initialized");
-//   }
+              // If the user's email is verified
+              if (user!.emailVerified) {
+                print("You are a verified user");
+              }
+              // If the user's email is not verified
+              else {
+                print("You need to verify your email first");
 
-//   @override
-//   void dispose() {
-//     super.dispose();
-//     // Dispose the TextEditingController objects when the Widget is closed
-//     _email.dispose();
-//     _password.dispose();
-//     print("TextEditingController disposed");
-//   }
+                // Builds the Home first, then navigation happens
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  // Push a new Widget page on the top of the current context screen
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      // Pass current context to the builder of the Navigator
+                      builder: (context) => const VerifyEmailView(),
+                    ),
+                  );
+                });
 
-//   @override
-//   Widget build(BuildContext context) {
-//     // The widget for specifying each page / screen of app
-//     // Has variuos part -
-//     // 1. Appbar - The top bar
-//     // 2. Body - for main content
-//     // 3. etc.
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text("Register"),
-//         backgroundColor: Colors.blue[100],
-//       ),
+                // return const Loading();
+                // return const VerifyEmailView();
+              }
 
-//       // Takes  and performs a Future, and once it returns a callback, produce a Widget depending on the state
-//       body: FutureBuilder(
-//         // Initialize the Firebase backend at starting
-//         // Initializes a new [FirebaseApp] instance by [name] and [options] and returns the created app. This method should be called before any usage of FlutterFire plugins.
-//         future: Firebase.initializeApp(
-//           options: DefaultFirebaseOptions.currentPlatform,
-//         ),
-//         builder: (context, snapshot) {
-//           // Now until the Future completes, a Loading State should be shown,
+              return Text("Done");
 
-//           switch (snapshot.connectionState) {
-//             // When the state is done
-//             case ConnectionState.done:
-//               print("Future success");
+            // Any other connection state
+            // case ConnectionState.none:
+            // case ConnectionState.waiting:
+            // case ConnectionState.active:
+            default:
+              print("Loading");
+              return Text("Loading");
+            // return Loading();
+          }
+        },
+      ),
+    );
+  }
+}
 
-//               return Column(
-//                 children: [
-//                   TextField(
-//                     // Specify that the input type is email address
-//                     keyboardType: TextInputType.emailAddress,
+class VerifyEmailView extends StatefulWidget {
+  const VerifyEmailView({super.key});
 
-//                     // Disable sugesstions and autocorrect while typing
-//                     enableSuggestions: false,
-//                     autocorrect: false,
+  @override
+  State<VerifyEmailView> createState() => _VerifyEmailViewState();
+}
 
-//                     // Specify the TextEditingController for password
-//                     controller: _email,
+class _VerifyEmailViewState extends State<VerifyEmailView> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("Verify Email")),
+      body: Column(
+        children: [
+          TextButton(
+            onPressed: () async {
+              // Get the current user from Firebase Auth object
+              final User? user = FirebaseAuth.instance.currentUser;
+              await user!.sendEmailVerification();
+              print(user);
+            },
+            child: Text("Send Email Veification"),
+          ),
 
-//                     // Show hint to user
-//                     decoration: InputDecoration(
-//                       hintText: "Enter your email here",
-//                     ),
-//                   ),
-
-//                   TextField(
-//                     // Hide the input as it is password
-//                     obscureText: true,
-
-//                     // Disable sugesstions and autocorrect while typing
-//                     enableSuggestions: false,
-//                     autocorrect: false,
-
-//                     // Specify the TextInputController for password
-//                     controller: _password,
-
-//                     // Show hint to user
-//                     decoration: InputDecoration(
-//                       hintText: "Enter your password here",
-//                     ),
-//                   ),
-
-//                   // Button to register and send request to Firebase Authentication
-//                   TextButton(
-//                     child: Text("Register"),
-
-//                     onPressed: () async {
-//                       // Store the contents from the TextEditingController objects
-//                       final email = _email.text;
-//                       final password = _password.text;
-
-//                       // Create an instance of firebase auth object to communicate with firebase auth
-//                       final FirebaseAuth _auth = FirebaseAuth.instance;
-
-//                       // Calls the Future function to create user with email and password and returns a UserCredential object
-//                       final UserCredential userCredential = await _auth
-//                           .createUserWithEmailAndPassword(
-//                             email: email,
-//                             password: password,
-//                           );
-
-//                       print(userCredential);
-//                     },
-//                   ),
-//                 ],
-//               );
-
-//             // Any other connection state
-//             // case ConnectionState.none:
-//             // case ConnectionState.waiting:
-//             // case ConnectionState.active:
-//             default:
-//               print("Loading");
-//               return Loading();
-//           }
-//         },
-//       ),
-//     );
-//   }
-// }
+          Text("Verify your email to continue"),
+        ],
+      ),
+    );
+  }
+}
