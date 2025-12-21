@@ -36,6 +36,139 @@ class _RegisterViewState extends State<RegisterView> {
 
   @override
   Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Register"),
+        backgroundColor: Colors.blue[100],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: Column(
+          children: [
+            TextField(
+              // Specify that the input type is email address
+              keyboardType: TextInputType.emailAddress,
+
+              // Disable sugesstions and autocorrect while typing
+              enableSuggestions: false,
+              autocorrect: false,
+
+              // Specify the TextEditingController for password
+              controller: _email,
+
+              // Show hint to user
+              decoration: InputDecoration(hintText: "Enter your email here"),
+            ),
+
+            TextField(
+              // Hide the input as it is password
+              obscureText: true,
+
+              // Disable sugesstions and autocorrect while typing
+              enableSuggestions: false,
+              autocorrect: false,
+
+              // Specify the TextInputController for password
+              controller: _password,
+
+              // Show hint to user
+              decoration: InputDecoration(hintText: "Enter your password here"),
+            ),
+
+            // Button to register and send request to Firebase Authentication
+            ElevatedButton(
+              child: Text("Register"),
+
+              onPressed: () async {
+                // Store the contents from the TextEditingController objects
+                final email = _email.text;
+                final password = _password.text;
+
+                try {
+                  // Create an instance of firebase auth object to communicate with firebase auth
+                  final FirebaseAuth _auth = FirebaseAuth.instance;
+                  /*
+                  UserCredential(additionalUserInfo: AdditionalUserInfo(isNewUser: true, profile: {}, providerId: null, username: null, authorizationCode: null), credential: null, user: User(displayName: null, email: vaibhav.udr21@gmail.com, isEmailVerified: false, isAnonymous: false, metadata: UserMetadata(creationTime: 2025-12-20 17:19:53.757Z, lastSignInTime: 2025-12-20 17:19:53.757Z), phoneNumber: null, photoURL: null, providerData, [UserInfo(displayName: null, email: vaibhav.udr21@gmail.com, phoneNumber: null, photoURL: null, providerId: password, uid: vaibhav.udr21@gmail.com)], refreshToken: null, tenantId: null, uid: vPwcmKRAEnYwKXJd9RP9lRyUU3U2))
+                  */
+
+                  // Calls the Future function to create user with email and password and returns a UserCredential object
+                  final UserCredential userCredential = await _auth
+                      .createUserWithEmailAndPassword(
+                        email: email,
+                        password: password,
+                      );
+
+                  print(userCredential);
+                }
+                // Catch only FirebaseAuthException exceptions
+                on FirebaseAuthException catch (e) {
+                  print("ERROR occured !!!");
+                  // print(e.runtimeType);
+                  // empty fields
+                  if (e.code == 'channel-error') {
+                    print("The fields are empty ---  channel-error !!");
+                  }
+                  // invalid email
+                  else if (e.code == 'invalid-email') {
+                    print("The entered email is invalid --- invalid-email !!");
+                  }
+                  // email already in use
+                  else if (e.code == 'email-already-in-use') {
+                    print(
+                      "The email is already in use --- email-already-in-use !!",
+                    );
+                  }
+                  // weak password
+                  else if (e.code == 'weak-password') {
+                    print("Weak Password --- weak-password !!");
+                  }
+                  print(e.code);
+                  print(e);
+                }
+                // Catch all other exceptions
+                catch (e) {
+                  print("ERROR occured !!!");
+                  print(e.runtimeType);
+                  print(e);
+                }
+              },
+            ),
+
+            SizedBox(height: 30.0),
+
+            TextButton(
+              child: const Text("Already registered? Login now"),
+              onPressed: () {
+                // Push the route with the given name onto the navigator, and then remove all the previous routes until the predicate returns true.
+                Navigator.of(
+                  context,
+                ).pushNamedAndRemoveUntil('/login', (route) => false);
+              },
+            ),
+
+            ElevatedButton(child: Text("Login"), onPressed: () {}),
+
+            TextButton.icon(
+              label: Text("Login"),
+              icon: Icon(Icons.login),
+              onPressed: () {},
+            ),
+
+            ElevatedButton.icon(
+              label: Text("Login"),
+              icon: Icon(Icons.login),
+              onPressed: () {},
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/*
+  @override
+  Widget build(BuildContext context) {
     // The widget for specifying each page / screen of app
     // Has variuos part -
     // 1. Appbar - The top bar
@@ -113,6 +246,10 @@ class _RegisterViewState extends State<RegisterView> {
                           // Create an instance of firebase auth object to communicate with firebase auth
                           final FirebaseAuth _auth = FirebaseAuth.instance;
 
+                          /*
+                          UserCredential(additionalUserInfo: AdditionalUserInfo(isNewUser: true, profile: {}, providerId: null, username: null, authorizationCode: null), credential: null, user: User(displayName: null, email: vaibhav.udr21@gmail.com, isEmailVerified: false, isAnonymous: false, metadata: UserMetadata(creationTime: 2025-12-20 17:19:53.757Z, lastSignInTime: 2025-12-20 17:19:53.757Z), phoneNumber: null, photoURL: null, providerData, [UserInfo(displayName: null, email: vaibhav.udr21@gmail.com, phoneNumber: null, photoURL: null, providerId: password, uid: vaibhav.udr21@gmail.com)], refreshToken: null, tenantId: null, uid: vPwcmKRAEnYwKXJd9RP9lRyUU3U2))
+                          */
+
                           // Calls the Future function to create user with email and password and returns a UserCredential object
                           final UserCredential userCredential = await _auth
                               .createUserWithEmailAndPassword(
@@ -183,4 +320,5 @@ class _RegisterViewState extends State<RegisterView> {
       ),
     );
   }
-}
+
+*/

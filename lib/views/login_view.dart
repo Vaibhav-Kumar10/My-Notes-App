@@ -36,6 +36,133 @@ class _LoginViewState extends State<LoginView> {
 
   @override
   Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("Login"), backgroundColor: Colors.blue[100]),
+
+      body: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: Column(
+          children: [
+            TextField(
+              // Specify that the input type is email address
+              keyboardType: TextInputType.emailAddress,
+
+              // Disable sugesstions and autocorrect while typing
+              enableSuggestions: false,
+              autocorrect: false,
+
+              // Specify the TextEditingController for password
+              controller: _email,
+
+              // Show hint to user
+              decoration: InputDecoration(hintText: "Enter your email here"),
+            ),
+
+            TextField(
+              // Hide the input as it is password
+              obscureText: true,
+
+              // Disable sugesstions and autocorrect while typing
+              enableSuggestions: false,
+              autocorrect: false,
+
+              // Specify the TextInputController for password
+              controller: _password,
+
+              // Show hint to user
+              decoration: InputDecoration(hintText: "Enter your password here"),
+            ),
+
+            // Button to login and send request to Firebase Authentication
+            ElevatedButton(
+              child: Text("Login"),
+
+              onPressed: () async {
+                // Store the contents from the TextEditingController objects
+                final email = _email.text;
+                final password = _password.text;
+
+                try {
+                  // Create an instance of firebase auth object to communicate with firebase auth
+                  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+                  // Calls the Future function to login with email and password and returns a UserCredential object
+                  final UserCredential userCredential = await _auth
+                      .signInWithEmailAndPassword(
+                        email: email,
+                        password: password,
+                      );
+
+                  print(userCredential);
+                }
+                // Catch only FirebaseAuthException exceptions
+                on FirebaseAuthException catch (e) {
+                  print("ERROR occured !!!");
+                  // print(e.runtimeType);
+                  // empty fields
+                  if (e.code == 'channel-error') {
+                    print("The fields are empty ---  channel-error !!");
+                  }
+                  // user not found
+                  else if (e.code == 'user-not-found') {
+                    print("The user doesn't exist --- user-not-found !!");
+                  }
+                  // wrong password
+                  else if (e.code == 'wrong-password') {
+                    print("Incorrect Password --- wrong-password !!");
+                  }
+                  print(e.code);
+                  print(e);
+                }
+                // Catch all other exceptions
+                catch (e) {
+                  print("ERROR occured !!!");
+                  print(e.runtimeType);
+                  print(e);
+                }
+              },
+            ),
+
+            SizedBox(height: 30.0),
+
+            TextButton(
+              child: const Text("Not registered yet ? Register now"),
+              onPressed: () {
+                // Push the route with the given name onto the navigator, and then remove all the previous routes until the predicate returns true.
+                Navigator.of(
+                  context,
+                ).pushNamedAndRemoveUntil('/register', (route) => false);
+              },
+            ),
+
+            ElevatedButton(child: Text("Register"), onPressed: () {}),
+
+            TextButton.icon(
+              label: Text("Register"),
+              icon: Icon(Icons.login),
+              onPressed: () {},
+            ),
+
+            ElevatedButton.icon(
+              label: Text("Register"),
+              icon: Icon(Icons.login),
+              onPressed: () {},
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+
+
+// Old build with Scaffold
+
+  /*
+  @override
+  Widget build(BuildContext context) {
     // The widget for specifying each page / screen of app
     // Has variuos part -
     // 1. Appbar - The top bar
@@ -174,4 +301,5 @@ class _LoginViewState extends State<LoginView> {
       ),
     );
   }
-}
+*/
+ 
