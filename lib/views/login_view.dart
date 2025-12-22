@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:my_notes_app/firebase_options.dart';
-import 'package:my_notes_app/loading.dart';
+import 'package:my_notes_app/constants/routes.dart';
+import 'package:my_notes_app/constants/loading.dart';
 
 import 'dart:developer' as devtools show log;
 
@@ -99,7 +100,7 @@ class _LoginViewState extends State<LoginView> {
 
                   // Push the route with the given name onto the navigator, and then remove all the previous routes, that are unncessary until the predicate returns true.
                   Navigator.of(context).pushNamedAndRemoveUntil(
-                    '/notes/',
+                    notesRoute,
                     // remove everything
                     (route) => false,
                   );
@@ -135,7 +136,7 @@ class _LoginViewState extends State<LoginView> {
               onPressed: () {
                 // Push the route with the given name onto the navigator, and then remove all the previous routes until the predicate returns true.
                 Navigator.of(context).pushNamedAndRemoveUntil(
-                  '/register/',
+                  registerRoute,
                   // remove everything
                   (route) => false,
                 );

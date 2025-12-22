@@ -1,9 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-
-// Import as alias and impoort only specific feature only
+import 'package:my_notes_app/constants/routes.dart';
 import 'dart:developer' as devtools show log;
+// Import as alias and impoort only specific feature only
 
 enum MenuAction { logout }
 
@@ -43,7 +43,7 @@ class _NotesViewState extends State<NotesView> {
                     await FirebaseAuth.instance.signOut();
                     // change the screen to login
                     Navigator.of(context).pushNamedAndRemoveUntil(
-                      '/login/',
+                      loginRoute,
                       // remove everything
                       (route) => false,
                     );
