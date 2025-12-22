@@ -96,6 +96,13 @@ class _RegisterViewState extends State<RegisterView> {
                     password: password,
                   );
 
+                  // Send a verification email after registering
+                  final user = _auth.currentUser;
+                  await user?.sendEmailVerification();
+
+                  // When user registered, redirect to verify email view
+                  Navigator.of(context).pushNamed(verifyEmailRoute);
+
                   // devtools.log(userCredential.toString());
                 }
                 // Catch only FirebaseAuthException exceptions
@@ -108,17 +115,20 @@ class _RegisterViewState extends State<RegisterView> {
                   // invalid email
                   else if (e.code == 'invalid-email') {
                     // devtools.log("The entered email is invalid --- invalid-email !!");
-                    await showErrorAlerts(context, "Invalid Email");
+                    await showErrorAlerts(
+                      context,
+                      "This is an Invalid Email Address",
+                    );
                   }
                   // email already in use
                   else if (e.code == 'email-already-in-use') {
                     // devtools.log(                      "The email is already in use --- email-already-in-use !!"                    );
-                    await showErrorAlerts(context, "Email Already in Use");
+                    await showErrorAlerts(context, "Email is already in use");
                   }
                   // weak password
                   else if (e.code == 'weak-password') {
                     // devtools.log("Weak Password --- weak-password !!");
-                    await showErrorAlerts(context, "Wrong Credentials");
+                    await showErrorAlerts(context, "Weak Password");
                   }
                   // Any other error
                   else {

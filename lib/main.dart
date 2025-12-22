@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:my_notes_app/home.dart';
+import 'package:my_notes_app/constants/routes.dart';
 import 'package:my_notes_app/views/login_view.dart';
 import 'package:my_notes_app/views/notes_view.dart';
 import 'package:my_notes_app/views/register_view.dart';
-import 'package:my_notes_app/constants/routes.dart';
+import 'package:my_notes_app/views/verify_email_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,12 +27,14 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: "My Notes App",
       theme: ThemeData(primarySwatch: Colors.blue),
+      // home: VerifyEmailView(),
       home: HomePage(),
       // initialRoute: '/login',
       routes: {
         loginRoute: (context) => LoginView(),
         registerRoute: (context) => RegisterView(),
         notesRoute: (context) => NotesView(),
+        verifyEmailRoute: (context) => VerifyEmailView(),
       },
     );
   }
