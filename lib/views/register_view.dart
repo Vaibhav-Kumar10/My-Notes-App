@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:my_notes_app/firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:my_notes_app/firebase_options.dart';
 import 'package:my_notes_app/loading.dart';
+
+import 'dart:developer' as devtools show log;
 
 class RegisterView extends StatefulWidget {
   const RegisterView({super.key});
@@ -22,7 +24,7 @@ class _RegisterViewState extends State<RegisterView> {
     // Create the TextEditingController objects when the Widget is initialised
     _email = TextEditingController();
     _password = TextEditingController();
-    print("TextEditingController initialized");
+    // print("TextEditingController initialized");
   }
 
   @override
@@ -31,7 +33,7 @@ class _RegisterViewState extends State<RegisterView> {
     // Dispose the TextEditingController objects when the Widget is closed
     _email.dispose();
     _password.dispose();
-    print("TextEditingController disposed");
+    // print("TextEditingController disposed");
   }
 
   @override
@@ -87,49 +89,42 @@ class _RegisterViewState extends State<RegisterView> {
                 try {
                   // Create an instance of firebase auth object to communicate with firebase auth
                   final FirebaseAuth _auth = FirebaseAuth.instance;
-                  /*
-                  UserCredential(additionalUserInfo: AdditionalUserInfo(isNewUser: true, profile: {}, providerId: null, username: null, authorizationCode: null), credential: null, user: User(displayName: null, email: vaibhav.udr21@gmail.com, isEmailVerified: false, isAnonymous: false, metadata: UserMetadata(creationTime: 2025-12-20 17:19:53.757Z, lastSignInTime: 2025-12-20 17:19:53.757Z), phoneNumber: null, photoURL: null, providerData, [UserInfo(displayName: null, email: vaibhav.udr21@gmail.com, phoneNumber: null, photoURL: null, providerId: password, uid: vaibhav.udr21@gmail.com)], refreshToken: null, tenantId: null, uid: vPwcmKRAEnYwKXJd9RP9lRyUU3U2))
-                  */
 
                   // Calls the Future function to create user with email and password and returns a UserCredential object
-                  final UserCredential userCredential = await _auth
-                      .createUserWithEmailAndPassword(
-                        email: email,
-                        password: password,
-                      );
+                  // final UserCredential userCredential =
+                  await _auth.createUserWithEmailAndPassword(
+                    email: email,
+                    password: password,
+                  );
 
-                  print(userCredential);
+                  // devtools.log(userCredential.toString());
                 }
                 // Catch only FirebaseAuthException exceptions
                 on FirebaseAuthException catch (e) {
-                  print("ERROR occured !!!");
-                  // print(e.runtimeType);
                   // empty fields
                   if (e.code == 'channel-error') {
-                    print("The fields are empty ---  channel-error !!");
+                    devtools.log("The fields are empty ---  channel-error !!");
                   }
                   // invalid email
                   else if (e.code == 'invalid-email') {
-                    print("The entered email is invalid --- invalid-email !!");
+                    devtools.log(
+                      "The entered email is invalid --- invalid-email !!",
+                    );
                   }
                   // email already in use
                   else if (e.code == 'email-already-in-use') {
-                    print(
+                    devtools.log(
                       "The email is already in use --- email-already-in-use !!",
                     );
                   }
                   // weak password
                   else if (e.code == 'weak-password') {
-                    print("Weak Password --- weak-password !!");
+                    devtools.log("Weak Password --- weak-password !!");
                   }
-                  print(e.code);
-                  print(e);
                 }
                 // Catch all other exceptions
                 catch (e) {
-                  print("ERROR occured !!!");
-                  print(e.runtimeType);
-                  print(e);
+                  devtools.log("ERROR occured !!!");
                 }
               },
             ),
@@ -140,9 +135,11 @@ class _RegisterViewState extends State<RegisterView> {
               child: const Text("Already registered? Login now"),
               onPressed: () {
                 // Push the route with the given name onto the navigator, and then remove all the previous routes until the predicate returns true.
-                Navigator.of(
-                  context,
-                ).pushNamedAndRemoveUntil('/login', (route) => false);
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                  '/login/',
+                  // remove everything
+                  (route) => false,
+                );
               },
             ),
 

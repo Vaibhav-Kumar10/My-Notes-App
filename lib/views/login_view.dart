@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:my_notes_app/firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:my_notes_app/firebase_options.dart';
 import 'package:my_notes_app/loading.dart';
+
+import 'dart:developer' as devtools show log;
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -22,7 +24,7 @@ class _LoginViewState extends State<LoginView> {
     // Create the TextEditingController objects when the Widget is initialised
     _email = TextEditingController();
     _password = TextEditingController();
-    print("TextEditingController initialized");
+    // print("TextEditingController initialized");
   }
 
   @override
@@ -31,7 +33,7 @@ class _LoginViewState extends State<LoginView> {
     // Dispose the TextEditingController objects when the Widget is closed
     _email.dispose();
     _password.dispose();
-    print("TextEditingController disposed");
+    // print("TextEditingController disposed");
   }
 
   @override
@@ -87,38 +89,41 @@ class _LoginViewState extends State<LoginView> {
                   final FirebaseAuth _auth = FirebaseAuth.instance;
 
                   // Calls the Future function to login with email and password and returns a UserCredential object
-                  final UserCredential userCredential = await _auth
-                      .signInWithEmailAndPassword(
-                        email: email,
-                        password: password,
-                      );
+                  // final UserCredential userCredential =
+                  await _auth.signInWithEmailAndPassword(
+                    email: email,
+                    password: password,
+                  );
 
-                  print(userCredential);
+                  // devtools.log(userCredential.toString());
+
+                  // Push the route with the given name onto the navigator, and then remove all the previous routes, that are unncessary until the predicate returns true.
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    '/notes/',
+                    // remove everything
+                    (route) => false,
+                  );
                 }
                 // Catch only FirebaseAuthException exceptions
                 on FirebaseAuthException catch (e) {
-                  print("ERROR occured !!!");
-                  // print(e.runtimeType);
                   // empty fields
                   if (e.code == 'channel-error') {
-                    print("The fields are empty ---  channel-error !!");
+                    devtools.log("The fields are empty ---  channel-error !!");
                   }
                   // user not found
                   else if (e.code == 'user-not-found') {
-                    print("The user doesn't exist --- user-not-found !!");
+                    devtools.log(
+                      "The user doesn't exist --- user-not-found !!",
+                    );
                   }
                   // wrong password
                   else if (e.code == 'wrong-password') {
-                    print("Incorrect Password --- wrong-password !!");
+                    devtools.log("Incorrect Password --- wrong-password !!");
                   }
-                  print(e.code);
-                  print(e);
                 }
                 // Catch all other exceptions
                 catch (e) {
-                  print("ERROR occured !!!");
-                  print(e.runtimeType);
-                  print(e);
+                  devtools.log("ERROR occured !!!");
                 }
               },
             ),
@@ -129,9 +134,11 @@ class _LoginViewState extends State<LoginView> {
               child: const Text("Not registered yet ? Register now"),
               onPressed: () {
                 // Push the route with the given name onto the navigator, and then remove all the previous routes until the predicate returns true.
-                Navigator.of(
-                  context,
-                ).pushNamedAndRemoveUntil('/register', (route) => false);
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                  '/register/',
+                  // remove everything
+                  (route) => false,
+                );
               },
             ),
 

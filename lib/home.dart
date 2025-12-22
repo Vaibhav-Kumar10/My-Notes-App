@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:my_notes_app/views/notes_view.dart';
 import 'package:my_notes_app/views/login_view.dart';
 import 'package:my_notes_app/views/register_view.dart';
-import 'package:my_notes_app/views/notes_view.dart';
 import 'package:my_notes_app/views/verify_email_view.dart';
-
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:my_notes_app/firebase_options.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:my_notes_app/loading.dart';
+
+import 'package:my_notes_app/firebase_options.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -33,22 +33,18 @@ class HomePage extends StatelessWidget {
         switch (snapshot.connectionState) {
           // When the state is done
           case ConnectionState.done:
-            print("Future success");
-
             // Get the current user from Firebase Auth object
             final user = FirebaseAuth.instance.currentUser;
-            print(user);
+            // print(user);
 
             // If user exists
             if (user != null) {
               // If the user's email is verified - go to notes view
               if (user.emailVerified) {
-                print("You are a verified user");
                 return const NotesView();
               }
               // If the user's email is not verified
               else {
-                print("You need to verify your email first");
                 return const VerifyEmailView();
               }
             }
@@ -56,11 +52,8 @@ class HomePage extends StatelessWidget {
             else {
               return const LoginView();
             }
-          // return const NotesView();
-          // return Text("Done");
 
           default:
-            print("Loading");
             return Loading();
           // Any other connection state
           // case ConnectionState.none:
@@ -72,6 +65,9 @@ class HomePage extends StatelessWidget {
   }
 }
 
+
+
+/*
 // import 'package:firebase_auth/firebase_auth.dart';
 // import 'package:flutter/material.dart';
 
@@ -112,3 +108,4 @@ class HomePage extends StatelessWidget {
 //     );
 //   }
 // }
+*/

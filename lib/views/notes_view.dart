@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -32,7 +30,6 @@ class _NotesViewState extends State<NotesView> {
         actions: [
           PopupMenuButton<MenuAction>(
             onSelected: (value) async {
-              print("Selected $value");
               devtools.log("Selected $value");
               switch (value) {
                 // If logout button is clicked
@@ -45,9 +42,11 @@ class _NotesViewState extends State<NotesView> {
                     // send request to firebase auth to signout
                     await FirebaseAuth.instance.signOut();
                     // change the screen to login
-                    Navigator.of(
-                      context,
-                    ).pushNamedAndRemoveUntil('/login', (_) => false);
+                    Navigator.of(context).pushNamedAndRemoveUntil(
+                      '/login/',
+                      // remove everything
+                      (route) => false,
+                    );
                   }
               }
             },

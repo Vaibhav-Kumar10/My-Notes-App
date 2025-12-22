@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:my_notes_app/home.dart';
 import 'package:my_notes_app/views/login_view.dart';
+import 'package:my_notes_app/views/notes_view.dart';
 import 'package:my_notes_app/views/register_view.dart';
-import 'package:my_notes_app/views/verify_email_view.dart';
 
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:my_notes_app/firebase_options.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:my_notes_app/views/verify_email_view.dart';
 import 'package:my_notes_app/loading.dart';
+import 'package:my_notes_app/firebase_options.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,9 +34,9 @@ class MyApp extends StatelessWidget {
       home: HomePage(),
       // initialRoute: '/login',
       routes: {
-        // '/': (context) => HomePage(),
-        '/login': (context) => LoginView(),
-        '/register': (context) => RegisterView(),
+        '/login/': (context) => LoginView(),
+        '/register/': (context) => RegisterView(),
+        '/notes/': (context) => NotesView(),
       },
     );
   }
