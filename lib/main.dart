@@ -5,17 +5,11 @@ import 'package:my_notes_app/views/notes_view.dart';
 import 'package:my_notes_app/views/register_view.dart';
 import 'package:my_notes_app/constants/routes.dart';
 
-import 'package:my_notes_app/constants/loading.dart';
-import 'package:my_notes_app/views/verify_email_view.dart';
-import 'package:my_notes_app/firebase_options.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize the Firebase backend at starting
-  // Initializes a new [FirebaseApp] instance by [name] and [options] and returns the created app. This method should be called before any usage of FlutterFire plugins.
+  // Initializes a new [FirebaseApp] instance by [name] and [o ptions] and returns the created app. This method should be called before any usage of FlutterFire plugins.
   // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   runApp(MyApp());

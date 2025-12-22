@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:my_notes_app/firebase_options.dart';
-import 'package:my_notes_app/constants/loading.dart';
+import 'package:my_notes_app/utilities/show_error_dialog.dart';
 import 'package:my_notes_app/constants/routes.dart';
 
 import 'dart:developer' as devtools show log;
@@ -104,28 +102,36 @@ class _RegisterViewState extends State<RegisterView> {
                 on FirebaseAuthException catch (e) {
                   // empty fields
                   if (e.code == 'channel-error') {
-                    devtools.log("The fields are empty ---  channel-error !!");
+                    // devtools.log("The fields are empty ---  channel-error !!");
+                    await showErrorAlerts(context, "Fields can't be empty");
                   }
                   // invalid email
                   else if (e.code == 'invalid-email') {
-                    devtools.log(
-                      "The entered email is invalid --- invalid-email !!",
-                    );
+                    // devtools.log("The entered email is invalid --- invalid-email !!");
+                    await showErrorAlerts(context, "Invalid Email");
                   }
                   // email already in use
                   else if (e.code == 'email-already-in-use') {
-                    devtools.log(
-                      "The email is already in use --- email-already-in-use !!",
-                    );
+                    // devtools.log(                      "The email is already in use --- email-already-in-use !!"                    );
+                    await showErrorAlerts(context, "Email Already in Use");
                   }
                   // weak password
                   else if (e.code == 'weak-password') {
-                    devtools.log("Weak Password --- weak-password !!");
+                    // devtools.log("Weak Password --- weak-password !!");
+                    await showErrorAlerts(context, "Wrong Credentials");
+                  }
+                  // Any other error
+                  else {
+                    await showErrorAlerts(
+                      context,
+                      "Error : ${e.code} \n ${e.message}",
+                    );
                   }
                 }
                 // Catch all other exceptions
                 catch (e) {
-                  devtools.log("ERROR occured !!!");
+                  // devtools.log("ERROR occured !!!");
+                  await showErrorAlerts(context, e.toString());
                 }
               },
             ),

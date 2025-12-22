@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:my_notes_app/views/notes_view.dart';
 import 'package:my_notes_app/views/login_view.dart';
-import 'package:my_notes_app/views/register_view.dart';
 import 'package:my_notes_app/views/verify_email_view.dart';
 import 'package:my_notes_app/constants/loading.dart';
 

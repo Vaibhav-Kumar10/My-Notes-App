@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:my_notes_app/firebase_options.dart';
+import 'package:my_notes_app/utilities/show_error_dialog.dart';
 import 'package:my_notes_app/constants/routes.dart';
-import 'package:my_notes_app/constants/loading.dart';
 
 import 'dart:developer' as devtools show log;
 
@@ -109,22 +107,31 @@ class _LoginViewState extends State<LoginView> {
                 on FirebaseAuthException catch (e) {
                   // empty fields
                   if (e.code == 'channel-error') {
-                    devtools.log("The fields are empty ---  channel-error !!");
+                    // devtools.log("The fields are empty ---  channel-error !!");
+                    await showErrorAlerts(context, "Fields can't be empty");
                   }
                   // user not found
                   else if (e.code == 'user-not-found') {
-                    devtools.log(
-                      "The user doesn't exist --- user-not-found !!",
-                    );
+                    // devtools.log("The user doesn't exist --- user-not-found !!");
+                    await showErrorAlerts(context, "User Not Found");
                   }
                   // wrong password
                   else if (e.code == 'wrong-password') {
-                    devtools.log("Incorrect Password --- wrong-password !!");
+                    // devtools.log("Incorrect Password --- wrong-password !!");
+                    await showErrorAlerts(context, "Wrong Credentials");
+                  }
+                  // Any other error
+                  else {
+                    await showErrorAlerts(
+                      context,
+                      "Error : ${e.code} \n ${e.message}",
+                    );
                   }
                 }
                 // Catch all other exceptions
                 catch (e) {
-                  devtools.log("ERROR occured !!!");
+                  // devtools.log("ERROR occured !!!");
+                  await showErrorAlerts(context, e.toString());
                 }
               },
             ),
