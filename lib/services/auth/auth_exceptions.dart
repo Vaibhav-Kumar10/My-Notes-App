@@ -8,6 +8,7 @@
 /// - Auth logic remains provider-agnostic
 /// - Errors are easier to test and reason about
 ///
+library;
 
 // Login Exceptions
 /// Thrown when a user with the given credentials is not found.

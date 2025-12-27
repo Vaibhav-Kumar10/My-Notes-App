@@ -1,10 +1,25 @@
+/// User registration screen.
+///
+/// This view allows new users to:
+/// - Create an account using email and password
+/// - Receive a verification email
+///
+/// Responsibilities:
+/// - Capture user credentials via text fields
+/// - Register the user using Firebase via AuthService
+/// - Send verification email
+/// - Handle authentication errors gracefully
+/// - Navigate users to the email verification screen after successful registration
+///
+library;
+
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:my_notes_app/services/auth/auth_exceptions.dart';
+import 'package:my_notes_app/services/auth/auth_service.dart';
 import 'package:my_notes_app/utilities/show_error_dialog.dart';
 import 'package:my_notes_app/constants/routes.dart';
 
-import 'dart:developer' as devtools show log;
-
+/// Stateful widget responsible for user registration.
 class RegisterView extends StatefulWidget {
   const RegisterView({super.key});
 
@@ -12,31 +27,37 @@ class RegisterView extends StatefulWidget {
   State<RegisterView> createState() => _RegisterViewState();
 }
 
+/// State class for RegisterView.
+///
+/// Manages:
+/// - TextEditingControllers for email and password input
+/// - Registration requests to AuthService
+/// - Sending verification email
+/// - Error handling and navigation
 class _RegisterViewState extends State<RegisterView> {
-  // Initialise the TextEditingController for email and password
+  // Controller for email input
   late final TextEditingController _email;
+  // Controller for password input
   late final TextEditingController _password;
 
+  /// Initializes text controllers when the widget is created
   @override
   void initState() {
     super.initState();
-    // Create the TextEditingController objects when the Widget is initialised
     _email = TextEditingController();
     _password = TextEditingController();
-    // print("TextEditingController initialized");
   }
 
+  /// Disposes the text controllers to free resources
   @override
   void dispose() {
-    super.dispose();
-    // Dispose the TextEditingController objects when the Widget is closed
     _email.dispose();
     _password.dispose();
-    // print("TextEditingController disposed");
+    super.dispose();
   }
 
   @override
-  Widget build(BuildContext context) {    
+  Widget build(BuildContext context) {
     // The widget for specifying each page / screen of app
     // Has variuos part -
     // 1. Appbar - The top bar
@@ -47,10 +68,12 @@ class _RegisterViewState extends State<RegisterView> {
         title: Text("Register"),
         backgroundColor: Colors.blue[100],
       ),
+
       body: Padding(
         padding: const EdgeInsets.all(10.0),
         child: Column(
           children: [
+            // Email input field
             TextField(
               // Specify that the input type is email address
               keyboardType: TextInputType.emailAddress,
@@ -66,6 +89,7 @@ class _RegisterViewState extends State<RegisterView> {
               decoration: InputDecoration(hintText: "Enter your email here"),
             ),
 
+            // Password input field
             TextField(
               // Hide the input as it is password
               obscureText: true,
@@ -81,78 +105,46 @@ class _RegisterViewState extends State<RegisterView> {
               decoration: InputDecoration(hintText: "Enter your password here"),
             ),
 
-            // Button to register and send request to Firebase Authentication
+            // Register button
             ElevatedButton(
               child: Text("Register"),
-
               onPressed: () async {
                 // Store the contents from the TextEditingController objects
                 final email = _email.text;
                 final password = _password.text;
 
                 try {
-                  // Create an instance of firebase auth object to communicate with firebase auth
-                  final FirebaseAuth _auth = FirebaseAuth.instance;
-
-                  // Calls the Future function to create user with email and password and returns a UserCredential object
-                  // final UserCredential userCredential =
-                  await _auth.createUserWithEmailAndPassword(
+                  // Attempt to register the user via AuthService
+                  await AuthService.firebase().createUser(
                     email: email,
                     password: password,
                   );
 
-                  // Send a verification email after registering
-                  final user = _auth.currentUser;
-                  await user?.sendEmailVerification();
+                  // Send verification email after registration
+                  await AuthService.firebase().sendEmailVerification();
 
-                  // When user registered, redirect to verify email view
+                  // Navigate to email verification screen
                   Navigator.of(context).pushNamed(verifyEmailRoute);
-
-                  // devtools.log(userCredential.toString());
-                }
-                // Catch only FirebaseAuthException exceptions
-                on FirebaseAuthException catch (e) {
-                  // empty fields
-                  if (e.code == 'channel-error') {
-                    // devtools.log("The fields are empty ---  channel-error !!");
-                    await showErrorAlerts(context, "Fields can't be empty");
-                  }
-                  // invalid email
-                  else if (e.code == 'invalid-email') {
-                    // devtools.log("The entered email is invalid --- invalid-email !!");
-                    await showErrorAlerts(
-                      context,
-                      "This is an Invalid Email Address",
-                    );
-                  }
-                  // email already in use
-                  else if (e.code == 'email-already-in-use') {
-                    // devtools.log(                      "The email is already in use --- email-already-in-use !!"                    );
-                    await showErrorAlerts(context, "Email is already in use");
-                  }
-                  // weak password
-                  else if (e.code == 'weak-password') {
-                    // devtools.log("Weak Password --- weak-password !!");
-                    await showErrorAlerts(context, "Weak Password");
-                  }
-                  // Any other error
-                  else {
-                    await showErrorAlerts(
-                      context,
-                      "Error : ${e.code} \n ${e.message}",
-                    );
-                  }
-                }
-                // Catch all other exceptions
-                catch (e) {
-                  // devtools.log("ERROR occured !!!");
-                  await showErrorAlerts(context, e.toString());
+                } on EmptyFieldsAuthException {
+                  await showErrorAlerts(context, "Fields can't be empty");
+                } on InvalidEmailAuthException {
+                  await showErrorAlerts(
+                    context,
+                    "This is an Invalid Email Address",
+                  );
+                } on EmailAlreadyInUseAuthException {
+                  await showErrorAlerts(context, "Email is already in use");
+                } on WeakPasswordAuthException {
+                  await showErrorAlerts(context, "Weak Password");
+                } on GenericAuthException {
+                  await showErrorAlerts(context, "Authentication Error");
                 }
               },
             ),
 
-            SizedBox(height: 30.0),
+            const SizedBox(height: 30.0),
 
+            // Link to login screen
             TextButton(
               child: const Text("Already registered? Login now"),
               onPressed: () {
@@ -164,180 +156,9 @@ class _RegisterViewState extends State<RegisterView> {
                 );
               },
             ),
-
-            ElevatedButton(child: Text("Login"), onPressed: () {}),
-
-            TextButton.icon(
-              label: Text("Login"),
-              icon: Icon(Icons.login),
-              onPressed: () {},
-            ),
-
-            ElevatedButton.icon(
-              label: Text("Login"),
-              icon: Icon(Icons.login),
-              onPressed: () {},
-            ),
           ],
         ),
       ),
     );
   }
 }
-
-/*
-  @override
-  Widget build(BuildContext context) {
-    // The widget for specifying each page / screen of app
-    // Has variuos part -
-    // 1. Appbar - The top bar
-    // 2. Body - for main content
-    // 3. etc.
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Register"),
-        backgroundColor: Colors.blue[100],
-      ),
-
-      // Takes  and performs a Future, and once it returns a callback, produce a Widget depending on the state
-      body: FutureBuilder(
-        // Initialize the Firebase backend at starting
-        // Initializes a new [FirebaseApp] instance by [name] and [options] and returns the created app. This method should be called before any usage of FlutterFire plugins.
-        future: Firebase.initializeApp(
-          options: DefaultFirebaseOptions.currentPlatform,
-        ),
-        builder: (context, snapshot) {
-          // Now until the Future completes, a Loading State should be shown,
-
-          switch (snapshot.connectionState) {
-            // When the state is done
-            case ConnectionState.done:
-              print("Future success");
-
-              return Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: Column(
-                  children: [
-                    TextField(
-                      // Specify that the input type is email address
-                      keyboardType: TextInputType.emailAddress,
-
-                      // Disable sugesstions and autocorrect while typing
-                      enableSuggestions: false,
-                      autocorrect: false,
-
-                      // Specify the TextEditingController for password
-                      controller: _email,
-
-                      // Show hint to user
-                      decoration: InputDecoration(
-                        hintText: "Enter your email here",
-                      ),
-                    ),
-
-                    TextField(
-                      // Hide the input as it is password
-                      obscureText: true,
-
-                      // Disable sugesstions and autocorrect while typing
-                      enableSuggestions: false,
-                      autocorrect: false,
-
-                      // Specify the TextInputController for password
-                      controller: _password,
-
-                      // Show hint to user
-                      decoration: InputDecoration(
-                        hintText: "Enter your password here",
-                      ),
-                    ),
-
-                    // Button to register and send request to Firebase Authentication
-                    ElevatedButton(
-                      child: Text("Register"),
-
-                      onPressed: () async {
-                        // Store the contents from the TextEditingController objects
-                        final email = _email.text;
-                        final password = _password.text;
-
-                        try {
-                          // Create an instance of firebase auth object to communicate with firebase auth
-                          final FirebaseAuth _auth = FirebaseAuth.instance;
-
-                          /*
-                          UserCredential(additionalUserInfo: AdditionalUserInfo(isNewUser: true, profile: {}, providerId: null, username: null, authorizationCode: null), credential: null, user: User(displayName: null, email: vaibhav.udr21@gmail.com, isEmailVerified: false, isAnonymous: false, metadata: UserMetadata(creationTime: 2025-12-20 17:19:53.757Z, lastSignInTime: 2025-12-20 17:19:53.757Z), phoneNumber: null, photoURL: null, providerData, [UserInfo(displayName: null, email: vaibhav.udr21@gmail.com, phoneNumber: null, photoURL: null, providerId: password, uid: vaibhav.udr21@gmail.com)], refreshToken: null, tenantId: null, uid: vPwcmKRAEnYwKXJd9RP9lRyUU3U2))
-                          */
-
-                          // Calls the Future function to create user with email and password and returns a UserCredential object
-                          final UserCredential userCredential = await _auth
-                              .createUserWithEmailAndPassword(
-                                email: email,
-                                password: password,
-                              );
-
-                          print(userCredential);
-                        }
-                        // Catch only FirebaseAuthException exceptions
-                        on FirebaseAuthException catch (e) {
-                          print("ERROR occured !!!");
-                          // print(e.runtimeType);
-                          // empty fields
-                          if (e.code == 'channel-error') {
-                            print("The fields are empty ---  channel-error !!");
-                          }
-                          // invalid email
-                          else if (e.code == 'invalid-email') {
-                            print(
-                              "The entered email is invalid --- invalid-email !!",
-                            );
-                          }
-                          // email already in use
-                          else if (e.code == 'email-already-in-use') {
-                            print(
-                              "The email is already in use --- email-already-in-use !!",
-                            );
-                          }
-                          // weak password
-                          else if (e.code == 'weak-password') {
-                            print("Weak Password --- weak-password !!");
-                          }
-                          print(e.code);
-                          print(e);
-                        }
-                        // Catch all other exceptions
-                        catch (e) {
-                          print("ERROR occured !!!");
-                          print(e.runtimeType);
-                          print(e);
-                        }
-                      },
-                    ),
-
-                    SizedBox(height: 30.0),
-
-                    Text("Already a user"),
-
-                    ElevatedButton.icon(
-                      label: Text("Login"),
-                      icon: Icon(Icons.login),
-                      onPressed: () {},
-                    ),
-                  ],
-                ),
-              );
-
-            // Any other connection state
-            // case ConnectionState.none:
-            // case ConnectionState.waiting:
-            // case ConnectionState.active:
-            default:
-              print("Loading");
-              return Loading();
-          }
-        },
-      ),
-    );
-  }
-
-*/

@@ -9,10 +9,19 @@
 /// It defines:
 /// - What authentication can do
 /// - Not how it is done
+///
+library;
 
 import 'package:my_notes_app/services/auth/auth_user.dart';
 
 abstract class AuthProvider {
+  /// Initializes the authentication provider.
+  ///
+  /// This method must be called before using any authentication features.
+  /// The actual initialization logic depends on the concrete provider
+  /// (e.g., Firebase setup, mock setup, etc.).
+  Future<void> initialize();
+
   /// Creates a new user using email and password.
   ///
   /// Throws [AuthException] variants if creation fails.

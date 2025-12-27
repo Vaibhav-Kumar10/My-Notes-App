@@ -1,9 +1,21 @@
+/// Email verification screen.
+///
+/// This view is shown when:
+/// - A user is logged in
+/// - But has not verified their email address
+///
+/// Responsibilities:
+/// - Inform the user that a verification email has been sent
+/// - Allow resending the verification email
+/// - Allow restarting the authentication flow (logout and return to registration)
+///
+library;
+
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'dart:developer' as devtools show log;
-
 import 'package:my_notes_app/constants/routes.dart';
+import 'package:my_notes_app/services/auth/auth_service.dart';
 
+/// Stateful widget for handling email verification actions.
 class VerifyEmailView extends StatefulWidget {
   const VerifyEmailView({super.key});
 
@@ -11,9 +23,14 @@ class VerifyEmailView extends StatefulWidget {
   State<VerifyEmailView> createState() => _VerifyEmailViewState();
 }
 
+/// State class that manages verification-related user actions.
+///
+/// Provides:
+/// - Resend verification email
+/// - Logout and restart registration process
 class _VerifyEmailViewState extends State<VerifyEmailView> {
   @override
-  Widget build(BuildContext context) {    
+  Widget build(BuildContext context) {
     // The widget for specifying each page / screen of app
     // Has variuos part -
     // 1. Appbar - The top bar
@@ -26,42 +43,43 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
       ),
       body: Column(
         children: [
-          SizedBox(height: 10.0),
+          const SizedBox(height: 10.0),
 
-          Text(
+          // Inform user that a verification email has been sent
+          const Text(
             "Verification Email sent. Please check your inbox to complete verification.",
           ),
 
-          SizedBox(height: 10.0),
+          const SizedBox(height: 10.0),
 
-          Text(
+          // Instructions for resending email if not received
+          const Text(
             "If you haven't received the verification email yet, press the button below.",
           ),
 
-          SizedBox(height: 10.0),
+          const SizedBox(height: 10.0),
 
+          // Button to resend verification email
           TextButton(
             onPressed: () async {
-              // Get the current user from Firebase Auth object
-              final user = FirebaseAuth.instance.currentUser;
-              await user?.sendEmailVerification();
-              // devtools.log("Verification button clicked");
+              await AuthService.firebase().sendEmailVerification();
             },
             child: Text("Send Email Veification"),
           ),
 
           SizedBox(height: 10.0),
 
-          // Button to restart the process
+          // Button to restart the authentication process
           TextButton(
             onPressed: () async {
-              await FirebaseAuth.instance.signOut();
+              // Logout the current user
+              await AuthService.firebase().logOut();
+              // Navigate to registration screen and remove all previous routes
               Navigator.of(context).pushNamedAndRemoveUntil(
                 // Got to register
                 registerRoute,
                 (route) => false,
               );
-              // devtools.log("RESTART button clicked");
             },
             child: Text("RESTART"),
           ),
