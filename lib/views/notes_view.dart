@@ -59,11 +59,6 @@ class _NotesViewState extends State<NotesView> {
               ];
             },
           ),
-          TextButton.icon(
-            icon: Icon(Icons.logout),
-            label: Text("Logout"),
-            onPressed: () {},
-          ),
         ],
       ),
       body: Text("My Notes"),

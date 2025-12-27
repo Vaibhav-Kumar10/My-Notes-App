@@ -13,7 +13,12 @@ class VerifyEmailView extends StatefulWidget {
 
 class _VerifyEmailViewState extends State<VerifyEmailView> {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) {    
+    // The widget for specifying each page / screen of app
+    // Has variuos part -
+    // 1. Appbar - The top bar
+    // 2. Body - for main content
+    // 3. etc.
     return Scaffold(
       appBar: AppBar(
         title: Text("Verify Email"),

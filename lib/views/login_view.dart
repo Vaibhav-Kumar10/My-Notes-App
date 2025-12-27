@@ -3,8 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:my_notes_app/utilities/show_error_dialog.dart';
 import 'package:my_notes_app/constants/routes.dart';
 
-import 'dart:developer' as devtools show log;
-
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
 
@@ -37,6 +35,11 @@ class _LoginViewState extends State<LoginView> {
 
   @override
   Widget build(BuildContext context) {
+    // The widget for specifying each page / screen of app
+    // Has variuos part -
+    // 1. Appbar - The top bar
+    // 2. Body - for main content
+    // 3. etc.
     return Scaffold(
       appBar: AppBar(title: Text("Login"), backgroundColor: Colors.blue[100]),
 
@@ -94,14 +97,21 @@ class _LoginViewState extends State<LoginView> {
                     password: password,
                   );
 
-                  // devtools.log(userCredential.toString());
-
-                  // Push the route with the given name onto the navigator, and then remove all the previous routes, that are unncessary until the predicate returns true.
-                  Navigator.of(context).pushNamedAndRemoveUntil(
-                    notesRoute,
-                    // remove everything
-                    (route) => false,
-                  );
+                  // Check if the user is email verifed
+                  final user = _auth.currentUser;
+                  // If the user's email is verified, let him login into app
+                  if (user?.emailVerified ?? false) {
+                    Navigator.of(
+                      context,
+                    ).pushNamedAndRemoveUntil(notesRoute, (route) => false);
+                  }
+                  // If the user's email is not verified, prompt him to verify email
+                  else {
+                    Navigator.of(context).pushNamedAndRemoveUntil(
+                      verifyEmailRoute,
+                      (route) => false,
+                    );
+                  }
                 }
                 // Catch only FirebaseAuthException exceptions
                 on FirebaseAuthException catch (e) {

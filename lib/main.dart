@@ -27,7 +27,6 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: "My Notes App",
       theme: ThemeData(primarySwatch: Colors.blue),
-      // home: VerifyEmailView(),
       home: HomePage(),
       // initialRoute: '/login',
       routes: {

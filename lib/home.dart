@@ -15,11 +15,6 @@ class HomePage extends StatelessWidget {
     // final user = FirebaseAuth.instance.currentUser?.emailVerified;
 
     // BuildContext context can be used to pass information form current Widget to another of its child Widget
-    // The widget for specifying each page / screen of app
-    // Has variuos part -
-    // 1. Appbar - The top bar
-    // 2. Body - for main content
-    // 3. etc.
     return FutureBuilder(
       // Initialize the Firebase backend at starting
       // Initializes a new [FirebaseApp] instance by [name] and [options] and returns the created app. This method should be called before any usage of FlutterFire plugins.
@@ -34,7 +29,6 @@ class HomePage extends StatelessWidget {
           case ConnectionState.done:
             // Get the current user from Firebase Auth object
             final user = FirebaseAuth.instance.currentUser;
-            // print(user);
 
             // If user exists
             if (user != null) {
@@ -55,10 +49,9 @@ class HomePage extends StatelessWidget {
           default:
             return Loading();
           // Any other connection state
-          // case ConnectionState.none:
-          // case ConnectionState.waiting:
-          // case ConnectionState.active:
+          // ConnectionState.none, ConnectionState.waiting, ConnectionState.active
         }
+        
       },
     );
   }
