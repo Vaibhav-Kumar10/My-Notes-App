@@ -6,6 +6,7 @@
 /// - Can be reused across multiple screens
 ///
 /// Intended for displaying user-friendly error messages.
+library;
 
 import 'package:flutter/material.dart';
 

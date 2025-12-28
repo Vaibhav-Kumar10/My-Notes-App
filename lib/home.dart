@@ -11,6 +11,7 @@
 /// - LoginView → not logged in
 ///
 /// While the authentication service is initializing, it shows a loading indicator.
+library;
 
 import 'package:flutter/material.dart';
 import 'package:my_notes_app/views/notes_view.dart';
