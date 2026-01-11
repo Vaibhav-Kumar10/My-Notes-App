@@ -58,7 +58,10 @@ class MockAuthProvider implements AuthProvider {
     if (password == 'kamzor#password@111') throw WeakPasswordAuthException();
 
     // Creating a new user
-    const user = AuthUser(isEmailVerified: false);
+    const user = AuthUser(
+      isEmailVerified: false,
+      email: 'mera.email@gmail.com',
+    );
     // Setting the mock user
     _user = user;
     // Return the user
@@ -94,7 +97,10 @@ class MockAuthProvider implements AuthProvider {
     await Future.delayed(const Duration(seconds: 1));
 
     // Update user to be email verified
-    const newUser = AuthUser(isEmailVerified: true);
+    const newUser = AuthUser(
+      isEmailVerified: true,
+      email: 'mera.email@gmail.com',
+    );
     // Set the updated user
     _user = newUser;
   }

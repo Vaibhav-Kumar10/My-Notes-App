@@ -120,8 +120,6 @@ class NotesService {
     // Throws a [MissingPlatformDirectoryException] if the system is unable to provide the directory.
     on MissingPlatformDirectoryException {
       throw UnableToGetDocumentsDirectory;
-    } catch (e) {
-      print(e);
     }
   }
 
