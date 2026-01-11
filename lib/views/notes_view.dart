@@ -12,9 +12,11 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:my_notes_app/constants/loading.dart';
 import 'package:my_notes_app/constants/routes.dart';
 import 'package:my_notes_app/enums/menu_action.dart';
 import 'package:my_notes_app/services/auth/auth_service.dart';
+import 'package:my_notes_app/services/crud/notes_service.dart';
 
 /// Stateful widget representing the authenticated area of the app.
 class NotesView extends StatefulWidget {
@@ -31,6 +33,23 @@ class NotesView extends StatefulWidget {
 /// - Logout interactions via PopupMenuButton
 /// - Confirmation dialog before logging out
 class _NotesViewState extends State<NotesView> {
+  // Get user's email
+  String get userEmail => AuthService.firebase().currentUser!.email!;
+  late final NotesService _notesService;
+
+  @override
+  void initState() {
+    _notesService = NotesService();
+    // This calls the factory constructor
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _notesService.close();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     // The widget for specifying each page / screen of app
@@ -78,7 +97,29 @@ class _NotesViewState extends State<NotesView> {
       ),
 
       // Main body of the screen showing user's notes
-      body: Text("My Notes"),
+      body: FutureBuilder(
+        future: _notesService.getOrCreateUser(email: userEmail),
+        builder: (context, snapshot) {
+          // Grab all notes from streamController
+          switch (snapshot.connectionState) {
+            case ConnectionState.done:
+              return StreamBuilder(
+                stream: _notesService.allNotes,
+                builder: (context, snapshot) {
+                  switch (snapshot.connectionState) {
+                    case ConnectionState.waiting:
+                      return const Text("Waitig for all notes...");
+                    default:
+                      return const Loading();
+                  }
+                },
+              );
+            // return const Text("Your Notes will appear here");
+            default:
+              return const Loading();
+          }
+        },
+      ),
     );
   }
 }

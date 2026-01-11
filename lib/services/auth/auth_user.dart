@@ -15,16 +15,18 @@ import 'package:flutter/material.dart';
 
 @immutable
 class AuthUser {
+  final String? email;
+
   /// Indicates whether the user's email has been verified.
   final bool isEmailVerified;
-  const AuthUser({required this.isEmailVerified});
+  const AuthUser({required this.email, required this.isEmailVerified});
 
   /// Creates an [AuthUser] from a Firebase [User] instance.
   ///
   /// Copies only the required fields instead of exposing the full
   /// Firebase user object to the rest of the app.
   factory AuthUser.fromFirebase(User user) =>
-      AuthUser(isEmailVerified: user.emailVerified);
+      AuthUser(email: user.email, isEmailVerified: user.emailVerified);
   // Take the emailVerified property from Firebase's User, makes its copy and call the constructor of AuthUser
 }
 
