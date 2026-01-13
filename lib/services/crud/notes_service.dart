@@ -97,7 +97,7 @@ class NotesService {
   /// - [UnableToGetDocumentsDirectory]
   Future<void> open() async {
     if (_db != null) {
-      throw DatabaseAlreadyOpenException;
+      throw DatabaseAlreadyOpenException();
     }
     try {
       // Get the path to application document directory
@@ -232,7 +232,7 @@ class NotesService {
       const text = '';
       final noteID = await db.insert(noteTable, {
         userIdColumn: owner.id,
-        textColumn: 'text',
+        textColumn: text,
         isSyncedWithCloudColumn: 1,
       });
 
@@ -354,10 +354,12 @@ class NotesService {
     await getNote(id: note.id);
 
     // Update database
-    final updatesCount = await db.update(noteTable, {
-      textColumn: text,
-      isSyncedWithCloudColumn: 0,
-    });
+    final updatesCount = await db.update(
+      noteTable,
+      {textColumn: text, isSyncedWithCloudColumn: 0},
+      where: 'id = ?',
+      whereArgs: [note.id],
+    );
 
     if (updatesCount == 0) {
       throw CouldNotUpdateNote();
