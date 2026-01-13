@@ -20,7 +20,14 @@ import 'package:my_notes_app/services/crud/crud_exceptions.dart';
 class NotesService {
   // To make the class instance as Singleton
   static final NotesService _shared = NotesService._sharedInstance();
-  NotesService._sharedInstance();
+  NotesService._sharedInstance() {
+    _notesStreamController = StreamController<List<DatabaseNote>>.broadcast(
+      onListen: () {
+        // Update with the currently read notes
+        _notesStreamController.sink.add(_notes);
+      },
+    );
+  }
   factory NotesService() => _shared;
 
   /// Internal reference to the SQLite database.
@@ -32,12 +39,13 @@ class NotesService {
   List<DatabaseNote> _notes = [];
 
   // The interface used by UI to interact with backend
-  final _notesStreamController =
-      StreamController<List<DatabaseNote>>.broadcast();
+  late final StreamController<List<DatabaseNote>> _notesStreamController;
   // broadcast() - A controller where [stream] can be listened to more than once.
 
   // Returns a stream of StreamController
   Stream<List<DatabaseNote>> get allNotes => _notesStreamController.stream;
+  // It doesn't get populated with default value, or with the value from new listeners
+  // So initialize it later
 
   // Function to reads all notes available in db,
   // and cache them in the local db, as well as StreamController

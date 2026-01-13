@@ -45,12 +45,6 @@ class _NotesViewState extends State<NotesView> {
   }
 
   @override
-  void dispose() {
-    _notesService.close();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     // The widget for specifying each page / screen of app
     // Has variuos part -
@@ -116,13 +110,36 @@ class _NotesViewState extends State<NotesView> {
                   switch (snapshot.connectionState) {
                     case ConnectionState.waiting:
                     case ConnectionState.active:
-                      return const Text("Waitig for all notes...");
+                      if (snapshot.hasData) {
+                        final allNotes = snapshot.data as List<DatabaseNote>;
+                        print(allNotes);
+                        // return Text("Got all the notes!!");
+                        return ListView.builder(
+                          itemCount: allNotes.length,
+                          itemBuilder: (context, index) {
+                            final curNote = allNotes[index];
+                            return ListTile(
+                              leading: Icon(Icons.note_sharp),
+                              title: Text(
+                                curNote.text,
+                                maxLines: 1,
+                                softWrap: true,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              subtitle: Text(("$index")),
+                              iconColor: Colors.blue[200],
+                              tileColor: Colors.deepPurpleAccent[100],
+                            );
+                          },
+                        );
+                      } else {
+                        return const Loading();
+                      }
                     default:
                       return const Loading();
                   }
                 },
               );
-            // return const Text("Your Notes will appear here");
             default:
               return const Loading();
           }
