@@ -2,15 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:my_notes_app/constants/loading.dart';
 import 'package:my_notes_app/services/auth/auth_service.dart';
 import 'package:my_notes_app/services/crud/notes_service.dart';
+import 'package:my_notes_app/utilities/generics/get_arguements.dart';
 
-class NewNoteView extends StatefulWidget {
-  const NewNoteView({super.key});
+class CreateUpdateNoteView extends StatefulWidget {
+  const CreateUpdateNoteView({super.key});
 
   @override
-  State<NewNoteView> createState() => _NewNoteViewState();
+  State<CreateUpdateNoteView> createState() => _CreateUpdateNoteViewState();
 }
 
-class _NewNoteViewState extends State<NewNoteView> {
+class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
   DatabaseNote? _note;
   late final NotesService _notesService;
   late final TextEditingController _textEditingController;
@@ -38,9 +39,20 @@ class _NewNoteViewState extends State<NewNoteView> {
   }
 
   // Create an empty note every time add note screen is reached
-  Future<DatabaseNote> createNewNote() async {
+  Future<DatabaseNote> createOrGetExistingNote(BuildContext context) async {
+    // Get the note from arguements, if any
+    final widgetNote = context.getArguement<DatabaseNote>();
+
+    // If we get a note from arguements, show that note
+    if (widgetNote != null) {
+      _note = widgetNote;
+      // Pre populate with existing note text
+      _textEditingController.text = widgetNote.text;
+      return widgetNote;
+    }
+
     final existingNote = _note;
-    // If we have a note existing
+    // If we have an existing note
     if (existingNote != null) {
       return existingNote;
     }
@@ -52,7 +64,10 @@ class _NewNoteViewState extends State<NewNoteView> {
       // Get the user with the current email, that is stored in the db
       final owner = await _notesService.getUser(email: email);
       // Create a note for that user
-      return await _notesService.createNote(owner: owner);
+      final newNote = await _notesService.createNote(owner: owner);
+      // Set the note to the newly created note
+      _note = newNote;
+      return newNote;
     }
   }
 
@@ -89,11 +104,10 @@ class _NewNoteViewState extends State<NewNoteView> {
         backgroundColor: Colors.blue[100],
       ),
       body: FutureBuilder(
-        future: createNewNote(),
+        future: createOrGetExistingNote(context),
         builder: (context, snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.done:
-              _note = snapshot.data as DatabaseNote;
               // Start listening to the text changes on UI
               _setupTextContollerListener();
               return TextField(
