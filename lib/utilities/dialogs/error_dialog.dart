@@ -8,6 +8,7 @@
 /// Intended for displaying user-friendly error messages.
 library;
 
+import 'package:my_notes_app/utilities/dialogs/generic_dialog.dart';
 import 'package:flutter/material.dart';
 
 /// Displays an alert dialog with the given error message.
@@ -17,23 +18,11 @@ import 'package:flutter/material.dart';
 /// - [errorText]: Message displayed to the user
 ///
 /// The dialog is dismissible via an "OK" button.
-Future<void> showErrorAlerts(BuildContext context, String errorText) {
-  return showDialog(
+Future<void> showErrorDialog(BuildContext context, String errorText) {
+  return showGenericDialog(
     context: context,
-    builder: (context) {
-      return AlertDialog(
-        title: Text("An error occured"),
-        content: Text(errorText),
-        actions: [
-          TextButton(
-            onPressed: () {
-              // Remove the current screen - Alert Screen
-              Navigator.of(context).pop();
-            },
-            child: Text("OK"),
-          ),
-        ],
-      );
-    },
+    title: "An error occured",
+    content: errorText,
+    optionsBuilder: () => {'OK': null},
   );
 }

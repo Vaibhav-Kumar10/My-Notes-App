@@ -16,8 +16,8 @@ library;
 import 'package:flutter/material.dart';
 import 'package:my_notes_app/services/auth/auth_exceptions.dart';
 import 'package:my_notes_app/services/auth/auth_service.dart';
-import 'package:my_notes_app/utilities/show_error_dialog.dart';
 import 'package:my_notes_app/constants/routes.dart';
+import 'package:my_notes_app/utilities/dialogs/error_dialog.dart';
 
 /// Stateful widget responsible for user registration.
 class RegisterView extends StatefulWidget {
@@ -126,18 +126,18 @@ class _RegisterViewState extends State<RegisterView> {
                   // Navigate to email verification screen
                   Navigator.of(context).pushNamed(verifyEmailRoute);
                 } on EmptyFieldsAuthException {
-                  await showErrorAlerts(context, "Fields can't be empty");
+                  await showErrorDialog(context, "Fields can't be empty");
                 } on InvalidEmailAuthException {
-                  await showErrorAlerts(
+                  await showErrorDialog(
                     context,
                     "This is an Invalid Email Address",
                   );
                 } on EmailAlreadyInUseAuthException {
-                  await showErrorAlerts(context, "Email is already in use");
+                  await showErrorDialog(context, "Email is already in use");
                 } on WeakPasswordAuthException {
-                  await showErrorAlerts(context, "Weak Password");
+                  await showErrorDialog(context, "Weak Password");
                 } on GenericAuthException {
-                  await showErrorAlerts(context, "Authentication Error");
+                  await showErrorDialog(context, "Authentication Error");
                 }
               },
             ),

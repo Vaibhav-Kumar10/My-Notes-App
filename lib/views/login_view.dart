@@ -17,8 +17,8 @@ library;
 import 'package:flutter/material.dart';
 import 'package:my_notes_app/services/auth/auth_exceptions.dart';
 import 'package:my_notes_app/services/auth/auth_service.dart';
-import 'package:my_notes_app/utilities/show_error_dialog.dart';
 import 'package:my_notes_app/constants/routes.dart';
+import 'package:my_notes_app/utilities/dialogs/error_dialog.dart';
 
 /// Stateful widget for handling user login.
 class LoginView extends StatefulWidget {
@@ -131,13 +131,13 @@ class _LoginViewState extends State<LoginView> {
                     );
                   }
                 } on EmptyFieldsAuthException {
-                  await showErrorAlerts(context, "Fields can't be empty");
+                  await showErrorDialog(context, "Fields can't be empty");
                 } on UserNotFoundAuthException {
-                  await showErrorAlerts(context, "User Not Found");
+                  await showErrorDialog(context, "User Not Found");
                 } on WrongPasswordAuthException {
-                  await showErrorAlerts(context, "Wrong Credentials");
+                  await showErrorDialog(context, "Wrong Credentials");
                 } on GenericAuthException {
-                  await showErrorAlerts(context, "Authentication Error");
+                  await showErrorDialog(context, "Authentication Error");
                 }
               },
             ),

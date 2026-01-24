@@ -17,6 +17,8 @@ import 'package:my_notes_app/constants/routes.dart';
 import 'package:my_notes_app/enums/menu_action.dart';
 import 'package:my_notes_app/services/auth/auth_service.dart';
 import 'package:my_notes_app/services/crud/notes_service.dart';
+import 'package:my_notes_app/utilities/dialogs/logout_dialog.dart';
+import 'package:my_notes_app/views/notes/notes_list_view.dart';
 
 /// Stateful widget representing the authenticated area of the app.
 class NotesView extends StatefulWidget {
@@ -112,24 +114,11 @@ class _NotesViewState extends State<NotesView> {
                     case ConnectionState.active:
                       if (snapshot.hasData) {
                         final allNotes = snapshot.data as List<DatabaseNote>;
-                        print(allNotes);
-                        // return Text("Got all the notes!!");
-                        return ListView.builder(
-                          itemCount: allNotes.length,
-                          itemBuilder: (context, index) {
-                            final curNote = allNotes[index];
-                            return ListTile(
-                              leading: Icon(Icons.note_sharp),
-                              title: Text(
-                                curNote.text,
-                                maxLines: 1,
-                                softWrap: true,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              subtitle: Text(("$index")),
-                              iconColor: Colors.blue[200],
-                              tileColor: Colors.deepPurpleAccent[100],
-                            );
+                        // print(allNotes);
+                        return NotesListView(
+                          notes: allNotes,
+                          onDeleteNode: (note) async {
+                            await _notesService.deleteNote(id: note.id);
                           },
                         );
                       } else {
@@ -147,48 +136,4 @@ class _NotesViewState extends State<NotesView> {
       ),
     );
   }
-}
-
-/// Shows a confirmation dialog before logging out.
-///
-/// Returns a `Future<bool>`:
-/// - true if user confirms logout
-/// - false if user cancels
-///
-/// Prevents accidental logouts and handles null returns if dialog is dismissed.
-///
-Future<bool> showLogOutDialog(BuildContext context) {
-  // showDialog returns an Future with optional return value
-  return showDialog(
-    context: context,
-    // Builds a widget - AlertDialog
-    builder: (context) {
-      return AlertDialog(
-        title: Text("Sign Out"),
-        content: Text("Are you sure you wnt to sign out ?"),
-        actions: [
-          // Cancel button returns false
-          TextButton.icon(
-            onPressed: () {
-              Navigator.of(context).pop(false);
-            },
-            label: Text("Cancel"),
-            icon: Icon(Icons.cancel),
-          ),
-
-          // Log out button returns true
-          TextButton.icon(
-            onPressed: () {
-              Navigator.of(context).pop(true);
-            },
-            label: Text("Log Out"),
-            icon: Icon(Icons.logout),
-          ),
-        ],
-      );
-    },
-  ).then((onValue) => onValue ?? false);
-  // Prevents null if dialog is dismissed
-  // then - returns a value that is either returned from the showDialog or a default value, here false
-  // Prevents null values that might be returned when user clicks on back navigation button or gesture or outside the dialog
 }
