@@ -9,7 +9,9 @@
 library;
 
 import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:my_notes_app/extensions/list/filter.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' show join;
@@ -18,6 +20,17 @@ import 'package:my_notes_app/services/crud/crud_exceptions.dart';
 /// This service is UI-agnostic and can be reused
 /// across the entire application.
 class NotesService {
+  /// Internal reference to the SQLite database.
+  ///
+  /// This is kept private to ensure controlled access.
+  Database? _db;
+
+  // This is the local cache for our notes for current user
+  List<DatabaseNote> _notes = [];
+
+  // User who is currently logged in
+  DatabaseUser? _user;
+
   // To make the class instance as Singleton
   static final NotesService _shared = NotesService._sharedInstance();
   NotesService._sharedInstance() {
@@ -30,20 +43,21 @@ class NotesService {
   }
   factory NotesService() => _shared;
 
-  /// Internal reference to the SQLite database.
-  ///
-  /// This is kept private to ensure controlled access.
-  Database? _db;
-
-  // This is the local cache for our notes for current user
-  List<DatabaseNote> _notes = [];
-
   // The interface used by UI to interact with backend
   late final StreamController<List<DatabaseNote>> _notesStreamController;
   // broadcast() - A controller where [stream] can be listened to more than once.
 
   // Returns a stream of StreamController
-  Stream<List<DatabaseNote>> get allNotes => _notesStreamController.stream;
+  Stream<List<DatabaseNote>> get allNotes =>
+      _notesStreamController.stream.filter((note) {
+        final currentUser = _user;
+        // Only return all notes for the current user
+        if (currentUser != null) {
+          return note.userId == currentUser.id;
+        } else {
+          throw UserShouldBeSetBeforeReadingAllNotes();
+        }
+      });
   // It doesn't get populated with default value, or with the value from new listeners
   // So initialize it later
 
@@ -55,15 +69,27 @@ class NotesService {
     _notesStreamController.add(_notes);
   }
 
-  Future<DatabaseUser> getOrCreateUser({required String email}) async {
+  /// Returns the existing user or creates a new one.
+  Future<DatabaseUser> getOrCreateUser({
+    required String email,
+    bool setAsCurrentUser = true,
+  }) async {
     try {
       // Get a user if exists
       final user = await getUser(email: email);
+      // Set as current user if needed - only to extract all the notes of that user
+      if (setAsCurrentUser) {
+        _user = user;
+      }
       return user;
     }
     // Otherwise create a user
     on CouldNotFindUser {
       final createdUser = await createUser(email: email);
+      // Set as current user if needed - only to extract all the notes of that user
+      if (setAsCurrentUser) {
+        _user = createdUser;
+      }
       return createdUser;
     } catch (e) {
       rethrow;

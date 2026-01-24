@@ -42,3 +42,7 @@ class CouldNotFindNote implements Exception {}
 ///
 /// This usually means no rows were updated.
 class CouldNotUpdateNote implements Exception {}
+
+// Thrown when attempting to read all notes
+// without setting the user first.
+class UserShouldBeSetBeforeReadingAllNotes implements Exception {}
