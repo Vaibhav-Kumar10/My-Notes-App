@@ -1,15 +1,43 @@
-/// Service responsible for handling all local CRUD operations
-/// using SQLite.
+/// ------------------------------------------------------------
+/// NotesService (Local CRUD Service)
+/// ------------------------------------------------------------
 ///
-/// This class manages:
-/// - Database lifecycle (open / close)
-/// - User creation and lookup
-/// - Note creation, retrieval, update, and deletion
+/// Central service responsible for:
+///   • SQLite database lifecycle
+///   • User management (User creation and lookup)
+///   • Note CRUD operations (Note creation, retrieval, update, and deletion)
+///   • Local caching
+///   • Real-time streaming updates to UI
+///
+/// Architecture:
+///   UI  →  NotesService  →  SQLite (sqflite)
+///
+/// Key Features:
+/// ------------------------------------------------------------
+/// - Singleton pattern (single DB instance)
+/// - SQLite local persistence
+/// - In-memory cache for fast reads
+/// - Stream-based updates (reactive UI)
+/// - User-scoped notes filtering
+///
+/// Flow:
+/// ------------------------------------------------------------
+/// Database → Cache → StreamController → UI widgets
+///
+/// Why caching?
+/// - Avoids hitting DB repeatedly
+/// - Faster rendering
+/// - Real-time updates
+///
+/// Why StreamController?
+/// - Automatically refresh UI when notes change
+/// - Works perfectly with StreamBuilder
+///
+/// ------------------------------------------------------------
 ///
 library;
 
 import 'dart:async';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:my_notes_app/extensions/list/filter.dart';
 import 'package:sqflite/sqflite.dart';
@@ -25,12 +53,36 @@ class NotesService {
   /// This is kept private to ensure controlled access.
   Database? _db;
 
+  /// In-memory cache of notes.
+  ///
+  /// Why?
+  /// - Faster than querying SQLite every time
+  /// - Allows instant UI updates
+  /// - Works with StreamController
   // This is the local cache for our notes for current user
   List<DatabaseNote> _notes = [];
 
-  // User who is currently logged in
+  /// Currently logged-in database user.
+  ///
+  /// Used to:
+  /// - Scope notes per user
+  /// - Filter streams
+  /// - Ensure data isolation
   DatabaseUser? _user;
 
+  /// ------------------------------------------------------------
+  /// Singleton Implementation
+  /// ------------------------------------------------------------
+  ///
+  /// Ensures only ONE database connection exists
+  /// throughout the app lifecycle.
+  ///
+  /// Prevents:
+  /// - multiple DB instances
+  /// - resource leaks
+  /// - inconsistent state
+  /// ------------------------------------------------------------
+  ///
   // To make the class instance as Singleton
   static final NotesService _shared = NotesService._sharedInstance();
   NotesService._sharedInstance() {
@@ -43,10 +95,28 @@ class NotesService {
   }
   factory NotesService() => _shared;
 
+  /// Broadcast stream controller used to push note updates.
+  ///
+  /// broadcast() allows:
+  /// - multiple listeners
+  /// - multiple StreamBuilders
+  ///
+  /// Every CRUD change updates this stream.
+  ///
+
   // The interface used by UI to interact with backend
   late final StreamController<List<DatabaseNote>> _notesStreamController;
   // broadcast() - A controller where [stream] can be listened to more than once.
 
+  /// Public stream exposed to UI.
+  ///
+  /// Returns only notes that belong to the current user.
+  ///
+  /// Internally:
+  /// - listens to cache
+  /// - filters using extension filter()
+  /// - emits updates automatically
+  ///
   // Returns a stream of StreamController
   Stream<List<DatabaseNote>> get allNotes =>
       _notesStreamController.stream.filter((note) {
@@ -61,6 +131,16 @@ class NotesService {
   // It doesn't get populated with default value, or with the value from new listeners
   // So initialize it later
 
+  /// Loads all notes from database into memory cache.
+  ///
+  /// Steps:
+  /// 1. Fetch from DB
+  /// 2. Store locally
+  /// 3. Push to stream
+  ///
+  /// Called when:
+  /// - DB opens
+  ///
   // Function to reads all notes available in db,
   // and cache them in the local db, as well as StreamController
   Future<void> _cacheNotes() async {
@@ -110,6 +190,8 @@ class NotesService {
     }
   }
 
+  /// Ensures the database is open.
+  ///
   Future<void> _ensureDbIsOpen() async {
     try {
       // Open database
@@ -243,7 +325,12 @@ class NotesService {
     }
   }
 
-  /// Creates a new empty note for the given user.
+  /// Creates a new empty note for the current user.
+  ///
+  /// After creation:
+  /// - Saves to database
+  /// - Adds to cache
+  /// - Notifies stream listeners
   ///
   /// Ensures that:
   /// - The user exists in the database
@@ -251,6 +338,8 @@ class NotesService {
   ///
   /// Throws:
   /// - [CouldNotFindUser]
+  ///
+  /// UI updates instantly due to stream emission.
   Future<DatabaseNote> createNote({required DatabaseUser owner}) async {
     await _ensureDbIsOpen();
 
@@ -284,7 +373,12 @@ class NotesService {
     }
   }
 
-  /// Deletes a note by its unique ID.
+  /// Deletes note permanently by its unique ID.
+  ///
+  /// After deletion:
+  /// - Removes from DB
+  /// - Removes from cache
+  /// - Pushes updated list to stream
   ///
   /// Throws:
   /// - [CouldNotDeleteNote] if no rows were deleted
@@ -373,6 +467,11 @@ class NotesService {
   ///
   /// Marks the note as not synced with the cloud.
   ///
+  /// After update:
+  /// - Writes to DB
+  /// - Refreshes cache
+  /// - Emits updated notes to stream
+  ///
   /// Throws:
   /// - [CouldNotFindNote]
   /// - [CouldNotUpdateNote]
@@ -411,6 +510,10 @@ class NotesService {
 }
 
 /// Immutable representation of a user stored in the database.
+/// Immutable ensures:
+/// - safe usage
+/// - no accidental mutation
+/// - predictable behavior
 @immutable
 class DatabaseUser {
   final int id;
@@ -435,7 +538,13 @@ class DatabaseUser {
   int get hashCode => id.hashCode;
 }
 
-/// Representation of a note stored in the database.
+/// Model representing a single note.
+///
+/// Contains:
+/// - id (primary key)
+/// - owner user id
+/// - text content
+/// - sync status
 class DatabaseNote {
   final int id;
   final int userId;

@@ -49,9 +49,9 @@ class _LoginViewState extends State<LoginView> {
   /// Disposes the text controllers to free resources
   @override
   void dispose() {
-    super.dispose();
     _email.dispose();
     _password.dispose();
+    super.dispose();
   }
 
   @override

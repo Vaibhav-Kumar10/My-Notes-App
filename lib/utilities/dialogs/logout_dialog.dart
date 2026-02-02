@@ -1,10 +1,19 @@
-/// Shows a confirmation dialog before logging out.
+/// Logout confirmation dialog.
 ///
-/// Returns a `Future<bool>`:
-/// - true if user confirms logout
-/// - false if user cancels
+/// Wraps [showGenericDialog] to provide a simple,
+/// consistent confirmation dialog before logging out.
 ///
-/// Prevents accidental logouts and handles null returns if dialog is dismissed.
+/// Returns:
+/// - true  → user confirmed logout
+/// - false → user cancelled or dismissed dialog
+///
+/// Purpose:
+/// - Prevent accidental logouts
+/// - Keep logout UX safe and predictable
+///
+/// This file exists as a small wrapper so:
+/// - UI code stays clean
+/// - Dialog text stays centralized
 ///
 library;
 

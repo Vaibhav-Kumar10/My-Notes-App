@@ -1,3 +1,32 @@
+/// Screen used for both creating and updating notes.
+///
+/// This view handles:
+/// - Creating a new empty note
+/// - Editing existing note content
+/// - Auto-saving changes to local database
+///
+/// Behavior:
+/// - If note argument exists → update mode
+/// - If no note → create new note
+///
+/// Responsibilities:
+/// - Load note data
+/// - Track text changes
+/// - Persist updates using NotesService
+/// - Delete empty notes if needed
+///
+/// Design choice:
+/// A single screen handles both create & update to:
+/// - Reduce duplication
+/// - Keep UX simple
+/// - Share same editor logic
+///
+/// Connected to:
+/// - NotesService (CRUD operations)
+/// - Navigation back to NotesView
+///
+library;
+
 import 'package:flutter/material.dart';
 import 'package:my_notes_app/constants/loading.dart';
 import 'package:my_notes_app/services/auth/auth_service.dart';

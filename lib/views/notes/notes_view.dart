@@ -1,13 +1,32 @@
-/// Main notes screen of the application.
+/// Main Notes screen of the application.
 ///
 /// This view is displayed when:
 /// - The user is authenticated
 /// - The user's email is verified
 ///
 /// Responsibilities:
-/// - Display the primary app content (notes)
+/// - Display all notes for the current user
+/// - Listen to real-time updates from NotesService stream
+/// - Navigate to create/update note screen
+/// - Allow deleting notes
 /// - Provide logout functionality via the app bar menu
 /// - Handle user sign-out and navigate back to login
+///
+///
+/// Architecture:
+/// - Uses NotesService (SQLite backend)
+/// - Subscribes to Stream<List<DatabaseNote>>
+/// - Reactively updates UI when notes change
+///
+/// Flow:
+/// User → NotesView
+///      → create note
+///      → edit note
+///      → delete note
+///      → logout
+///
+/// This screen acts as:
+/// 👉 The home/dashboard of the app
 ///
 library;
 

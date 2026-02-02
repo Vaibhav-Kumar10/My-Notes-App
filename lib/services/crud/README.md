@@ -22,6 +22,8 @@ The CRUD service handles:
 * Local SQLite database lifecycle
 * User persistence (email-based)
 * Note persistence (per-user)
+* In-memory caching of notes
+* Reactive updates to the UI
 * Safe database access via controlled API
 * Explicit error handling via custom exceptions
 
@@ -68,9 +70,37 @@ All database-related errors are **explicitly modeled** using custom exception cl
 
 ---
 
+# 🆕 Architecture Update (Reactive + Cached)
+
+The service now follows a **singleton + stream-based architecture**.
+
+### Why?
+
+To allow:
+
+* Real-time UI updates
+* Fewer database reads
+* Better performance
+* Centralized state management
+
+---
+
 ## 🧠 NotesService (`notes_service.dart`)
 
 This is the **core service class** that manages all database operations.
+
+### 🔹 Singleton Pattern
+
+```dart
+static final NotesService _shared = NotesService._sharedInstance();
+factory NotesService() => _shared;
+```
+
+Ensures:
+
+* Only one database instance
+* Single source of truth
+* Shared cache across app
 
 ---
 
@@ -92,6 +122,52 @@ Database _getDatabaseOrThrow()
 
 ---
 
+# 🆕 In-Memory Cache
+
+```dart
+final List<DatabaseNote> _notes = [];
+```
+
+The service keeps notes **in memory** to:
+
+* Avoid repeated DB reads
+* Provide faster UI rendering
+* Enable reactive streams
+
+Cache is automatically updated after every:
+
+* create
+* update
+* delete
+
+---
+
+# 🆕 Reactive Stream Support
+
+```dart
+Stream<List<DatabaseNote>> get allNotes
+```
+
+* Emits updated notes whenever data changes
+* Used by `NotesListView` with `StreamBuilder`
+* Enables automatic UI refresh
+
+### Flow
+
+```
+DB change
+  ↓
+cache updated
+  ↓
+stream emits
+  ↓
+UI rebuilds automatically
+```
+
+This removes the need for manual refresh calls.
+
+---
+
 ## 🔄 Database Lifecycle
 
 ### `open()`
@@ -102,6 +178,8 @@ Database _getDatabaseOrThrow()
   * `user` table
   * `note` table
 * Stores DB instance for global use
+* Loads notes into cache
+* Starts stream updates
 
 ```text
 Documents Directory
@@ -110,6 +188,7 @@ notes.db
    ↓
 user table
 note table
+cache
 ```
 
 **Possible Errors**
@@ -123,6 +202,7 @@ note table
 
 * Closes the database safely
 * Clears internal DB reference
+* Stops stream updates
 
 **Possible Errors**
 
@@ -178,10 +258,22 @@ class DatabaseUser
 
 ## 📝 Note Operations
 
+All note operations:
+
+✅ update database
+✅ update cache
+✅ emit new stream value
+
+So UI always stays synchronized.
+
+---
+
 ### `createNote({required DatabaseUser owner})`
 
 * Ensures the owner exists in DB
 * Creates an empty note linked to user
+* Adds to cache
+* Emits stream update
 * Marks note as synced initially
 
 **Throws**
@@ -204,6 +296,7 @@ class DatabaseUser
 
 * Returns all notes from the database
 * Useful for listing notes per user
+* Prefer `allNotes` stream for UI usage
 
 ---
 
@@ -211,6 +304,8 @@ class DatabaseUser
 
 * Updates note content
 * Marks note as **not synced with cloud**
+* Updates cache
+* Emits update
 
 **Throws**
 
@@ -221,8 +316,9 @@ class DatabaseUser
 
 ### `deleteNote({required int id})`
 
-* Deletes a specific note
-
+* Removes a specific note from DB
+* Removes it from cache
+* Emits update
 **Throws**
 
 * `CouldNotDeleteNote`
@@ -233,6 +329,8 @@ class DatabaseUser
 
 * Deletes all notes
 * Returns number of rows affected
+* Clears DB + cache
+* Emits empty list
 
 ---
 
@@ -244,11 +342,10 @@ class DatabaseNote
 
 * Represents a single note row
 * Tracks:
-
   * Owner (`userId`)
   * Text content
   * Cloud sync state
-* Equality based on `id`
+  * Equality based on `id`
 
 ---
 
@@ -282,23 +379,29 @@ CREATE TABLE note (
 ## 🔄 Data Flow Overview
 
 ```
-UI
+UI (StreamBuilder)
  ↓
-NotesService
+NotesService (singleton)
+ ↓
+Cache (_notes)
  ↓
 SQLite (sqflite)
  ↓
-notes.db (local storage)
+notes.db
 ```
 
 ---
 
 ## ✅ Design Highlights
 
+* Singleton service
 * Explicit lifecycle management (`open` / `close`)
+* In-memory caching
+* Reactive stream updates
 * Strongly typed models (`DatabaseUser`, `DatabaseNote`)
 * Clear separation from UI & auth layers
 * Predictable error handling via custom exceptions
+* Offline-first ready
 * Ready for future cloud sync integration
 
 ---
@@ -308,5 +411,7 @@ notes.db (local storage)
 This service is designed to:
 
 * Work **offline-first**
-* Be extended with cloud sync (Firebase / REST API)
+* Provide **instant UI updates**
+* Minimize DB reads
+* Scale easily to cloud sync (Firebase / REST API)
 * Act as a single source of truth for local notes

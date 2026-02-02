@@ -1,11 +1,23 @@
 /// Utility function for displaying error dialogs.
 ///
+/// Used by:
+/// - Login
+/// - Register
+/// - Notes
+/// - Any screen needing error feedback
+///
 /// This helper:
 /// - Centralizes error dialog UI
 /// - Keeps UI code clean and consistent
 /// - Can be reused across multiple screens
 ///
 /// Intended for displaying user-friendly error messages.
+///
+/// Always shows:
+/// - Title
+/// - Error message
+/// - Single "OK" dismiss button
+///
 library;
 
 import 'package:my_notes_app/utilities/dialogs/generic_dialog.dart';

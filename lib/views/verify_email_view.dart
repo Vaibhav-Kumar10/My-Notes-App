@@ -64,7 +64,7 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
             onPressed: () async {
               await AuthService.firebase().sendEmailVerification();
             },
-            child: Text("Send Email Veification"),
+            child: Text("Send Email Verification"),
           ),
 
           SizedBox(height: 10.0),

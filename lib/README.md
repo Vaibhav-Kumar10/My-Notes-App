@@ -1,38 +1,89 @@
-
 # 🖥️ My Notes App – UI & Utilities
 
-This section of the project handles **all user-facing screens, navigation, and reusable UI utilities**.
-It is designed to work **cleanly with the authentication service** and keeps UI logic separate from backend/auth logic.
+A simple **Flutter notes application** with:
+
+* 🔐 Firebase Authentication (login/register/verify email)
+* 🗄️ Local SQLite storage (offline-first)
+* ⚡ Reactive UI with real-time updates
+* 🧩 Clean separation of UI, Auth, and Data layers
 
 ---
 
 ## 📂 Folder Structure
 
 ```
-lib/
+├── main.dart                        # App entry point
+├── home.dart                        # Home page deciding initial screen
+
 ├── utilities/
-│   └── show_error_dialog.dart       # Generic error dialog utility
+|   └── dialogs/
+|       └── delete_dialog.dart 
+|       └── error_dialog.dart 
+|       └── generic_dialog.dart 
+|       └── logout_dialog.dart
+
 ├── views/
 │   ├── login_view.dart              # Login screen
 │   ├── register_view.dart           # Registration screen
 │   ├── verify_email_view.dart       # Email verification screen
-│   └── notes_view.dart              # Main notes screen
-├── home.dart                        # Home page deciding initial screen
-└── main.dart                        # App entry point
+|   └── notes/
+│       ├── notes_view.dart          # Main notes screen
+│       ├── notes_list_view.dart
+│       └── create_update_note_view.dart
+
+└── services/
+    └── crud/
+        ├── crud_exceptions.dart
+        └── notes_service.dart
 ```
+
+---
+
+# 🖥️ UI Layer
+
+Handles **all screens, navigation, and dialogs only**.
+No database or auth logic lives here.
+
+### Views
+
+| View                  | Purpose                 |
+| --------------------- | ----------------------- |
+| LoginView             | Existing users login    |
+| RegisterView          | New user registration   |
+| VerifyEmailView       | Email verification flow |
+| NotesView             | Main notes screen       |
+| Create/UpdateNoteView | Edit notes              |
+| NotesListView         | Displays notes list     |
 
 ---
 
 ## 🧩 Utilities
 
-### `show_error_dialog.dart`
+Reusable dialogs to keep UI code clean and avoid repeated `AlertDialog` boilerplate.
 
-* Provides a **centralized, reusable error alert**.
-* Keeps UI clean by avoiding repeated dialog boilerplate.
-* Usage example:
+```
+lib/utilities/dialogs/
+├── generic_dialog.dart
+├── error_dialog.dart
+├── logout_dialog.dart
+└── delete_dialog.dart
+```
+
+### Dialog Helpers
+
+| File                | Purpose                                                |
+| ------------------- | ------------------------------------------------------ |
+| generic_dialog.dart | Base reusable dialog builder (buttons + return values) |
+| error_dialog.dart   | Standard error popup with message + OK                 |
+| logout_dialog.dart  | Logout confirmation dialog                             |
+| delete_dialog.dart  | Delete confirmation dialog                             |
+
+### Example
 
 ```dart
-await showErrorAlerts(context, "An error occurred");
+await showErrorDialog(context, "Something went wrong");
+
+final shouldLogout = await showLogoutDialog(context);
 ```
 
 ---
@@ -102,18 +153,100 @@ await showErrorAlerts(context, "An error occurred");
 
 ---
 
-## ⚡ Flow Overview
+## 🔐 Authentication Flow
 
 ```
 App Start
    ↓
-HomePage → AuthService.firebase().initialize()
+Auth initialize
    ↓
-[User Logged In?]
-   ├─ Yes → [Email Verified?]
-   │           ├─ Yes → NotesView
-   │           └─ No → VerifyEmailView
-   └─ No → LoginView
+Logged in?
+   ├─ No  → Login
+   └─ Yes
+        ├─ Verified → Notes
+        └─ Not verified → Verify Email
+```
+
+Managed centrally in **home.dart**.
+
+---
+
+# 🗄️ Local CRUD Service (SQLite)
+
+Provides **offline-first persistence** using `sqflite`.
+
+Responsible for:
+
+* Users
+* Notes
+* Database lifecycle
+* Caching
+* Reactive updates
+
+---
+
+## NotesService Highlights
+
+### Singleton
+
+Single shared instance across the app.
+
+```dart
+factory NotesService() => _shared;
+```
+
+---
+
+### In-memory Cache
+
+```dart
+final List<DatabaseNote> _notes = [];
+```
+
+* Faster reads
+* Fewer DB queries
+
+---
+
+### Reactive Stream
+
+```dart
+Stream<List<DatabaseNote>> get allNotes
+```
+
+* Emits updates automatically
+* Used with `StreamBuilder`
+* UI refreshes instantly
+
+---
+
+### CRUD
+
+* createUser / getUser / deleteUser
+* createNote / updateNote / deleteNote / deleteAllNotes
+* clear custom exceptions for failures
+
+---
+
+### Schema
+
+```sql
+user(id, email UNIQUE)
+note(id, user_id, text, is_synced_with_cloud)
+```
+
+---
+
+# 🔄 Data Flow
+
+```
+UI
+ ↓
+NotesService (singleton)
+ ↓
+Cache
+ ↓
+SQLite
 ```
 
 ---
@@ -131,3 +264,14 @@ HomePage → AuthService.firebase().initialize()
 * Each screen has **clear responsibility**.
 * Navigation is **controlled centrally** in `HomePage` and by view actions.
 * Reusable utilities improve **code maintainability** and **user experience**.
+
+---
+
+## ✅ Design Principles
+
+* Clean architecture
+* UI ↔ Auth ↔ Database separation
+* Offline-first
+* Reactive updates
+* Minimal boilerplate
+* Easy to extend (cloud sync ready)

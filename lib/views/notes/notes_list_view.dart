@@ -1,3 +1,28 @@
+/// Stateless widget responsible for rendering a list of notes.
+///
+/// Responsibilities:
+/// - Receive list of DatabaseNote objects
+/// - Display them in a scrollable list
+/// - Provide callbacks for:
+///     • onDelete
+///     • onTap (open note)
+///
+/// Purpose:
+/// - Separate UI rendering from business logic
+/// - Keep NotesView clean and readable
+///
+/// This widget is purely presentational:
+/// - No database logic
+/// - No service calls
+/// - Only displays data and triggers callbacks
+///
+/// Promotes:
+/// - Reusability
+/// - Testability
+/// - Clean architecture
+///
+library;
+
 import 'package:flutter/material.dart';
 import 'package:my_notes_app/services/crud/notes_service.dart';
 import 'package:my_notes_app/utilities/dialogs/delete_dialog.dart';
